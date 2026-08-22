@@ -27,6 +27,7 @@ def read_notes():
     except FileNotFoundError:
         print("No notes found for this topic.")
 
+
 def list_notes():
   print("\nAvailable Notes:")
 
@@ -39,12 +40,39 @@ def list_notes():
    if file.endswith(".text"):
      topic = file.replace(".text", "").replace("_", " ").title()
      print("-", topic)
+
+def search_notes():
+  keyword = input("Enter keyword to search: ").lower()
+  file = os.listdir("notes")
+  found = False
+  print("\nSearch Results:")
+
+  for file in file:
+    if keyword in file.lower():
+      print("-", file.replace(".text", "").replace("_", " ").title())
+      found = True
+      if not found:
+        print("No matching notes found")
+
+
+def delete_notes():
+  topic = input("Enter topic to delete: ")
+  filename = "notes/" + topic.replace(" ", "_").lower() + ".text"
+  if os.remove(filename):
+    print("Note deleted successfully!")
+  else:
+    print("Note not found.")
+
+      
+
 while True:
   print("\nAI Learning Companion")
   print("1. Save Notes")
   print("2. Read Notes")
   print("3. List ALL Notes")
-  print("4. Exit")     
+  print("4. Search Notes")
+  print("5. Delete Notes")   
+  print("6. Exit") 
 
   choice = input("Choose an option: ")
 
@@ -55,7 +83,11 @@ while True:
   elif choice == "3":
     list_notes()  
   elif choice =="4":
-    print("Goodbye!")
+    search_notes()
+  elif choice == "5":
+    delete_notes()  
+  elif choice =="6":
+    print("Goodbye!")  
     break
             
   else :
