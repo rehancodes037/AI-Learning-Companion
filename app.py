@@ -63,7 +63,17 @@ def delete_notes():
   else:
     print("Note not found.")
 
-      
+def update_note():
+  topic = input("Enter topic to update: ")
+  filename = "notes/" + topic.replace(" ", "_").lower() + ".text"
+  if os.path.exists(filename):
+    new_notes = input("Enter new notes: ")
+    file = open(filename, "w")
+    file.write(new_notes)
+    file.close()
+    print("Note Update Successfully!")
+  else:
+    print("Note not found.")
 
 while True:
   print("\nAI Learning Companion")
@@ -71,8 +81,9 @@ while True:
   print("2. Read Notes")
   print("3. List ALL Notes")
   print("4. Search Notes")
-  print("5. Delete Notes")   
-  print("6. Exit") 
+  print("5. Delete Notes") 
+  print("6. Update Note")  
+  print("7. Exit") 
 
   choice = input("Choose an option: ")
 
@@ -85,8 +96,10 @@ while True:
   elif choice =="4":
     search_notes()
   elif choice == "5":
-    delete_notes()  
+    delete_notes()
   elif choice =="6":
+    update_note()    
+  elif choice =="7":
     print("Goodbye!")  
     break
             
