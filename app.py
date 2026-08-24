@@ -1,13 +1,17 @@
 import os
+from datetime import datetime
+
 
 print("AI Learning Companion")
 
 def save_notes():
     topic = input("Enter topic: ")
     notes = input("Enter notes: ")
+    date_time = datetime.now()
     filename = "notes/" + topic.replace(" ", "_").lower( ) + ".text"
     file = open(filename, "w")
-    file.write(notes)
+    file.write("Created: " + str(date_time) + "\n")
+    file.write(notes + "\n")
     file.close()
 
     print("Notes saved successfully!")
