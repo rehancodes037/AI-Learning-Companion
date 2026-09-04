@@ -1,18 +1,45 @@
 import os
+import json
 from datetime import datetime
+from dotenv import load_dotenv
+from google import genai
 
+load_dotenv()
+
+api_key = os.getenv("GEMINI_API_KEY")
+print("API key loaded:", api_key is not None)
+ 
+
+client = genai.Client(api_key=api_key)
+
+def ask_ai():
+   question = input("Ask AI: ")
+   response = client.models.generate_content(
+      model="gemini-3.7-flash",
+      contents=question
+   )
+   print("\nAI:",response.text)
 
 print("AI Learning Companion")
 
 def save_notes():
     topic = input("Enter topic: ")
     notes = input("Enter notes: ")
-    date_time = datetime.now()
-    filename = "notes/" + topic.replace(" ", "_").lower( ) + ".text"
-    file = open(filename, "w")
-    file.write("Created: " + str(date_time) + "\n")
-    file.write(notes + "\n")
-    file.close()
+    category = input("Enter category: ")
+    date_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    with open("data/notes.json", "r") as file:
+       all_notes = json.load(file)
+    new_notes = {
+      "topic": topic,
+      "category": category,
+      "notes": notes,
+      "created": date_time
+    }
+    all_notes.append(new_notes)
+    with open("data/notes.json", "w") as file:
+       json.dump(all_notes, file, indent=4)
+
+     
 
     print("Notes saved successfully!")
 
@@ -20,52 +47,81 @@ def save_notes():
 
 def read_notes():
     topic = input("Enter topic: ")
-    filename = "notes/" + topic.replace(" ", "_").lower()  + ".text"
-    try:
-     file = open(filename, "r")
-     content = file.read()
-     file.close()
-
-     print("\nYour Notes:")
-     print(content)
-    except FileNotFoundError:
-        print("No notes found for this topic.")
+    with open("data/notes.json", "r")as file:
+        all_notes = json.load(file)
+        found = False
+        for note in all_notes:
+          if note["topic"].lower() == topic.lower():
+            print("\nYourNotes:")
+            print(note["notes"])
+            print("Created:", note["created"])
+            found = True
+            if  not found:
+              print("No notes found for this topic.")
+         
+         
 
 
 def list_notes():
   print("\nAvailable Notes:")
 
-  files = os.listdir("notes")
-  if not files:
-    print("No notes available")
-    return
-  for file in files:
-    
-   if file.endswith(".text"):
-     topic = file.replace(".text", "").replace("_", " ").title()
-     print("-", topic)
+  with open("data/notes.json", "r")as file:
+    all_notes = json.load(file)
+    if len(all_notes) == 0:
+      print("No notes available.")
+    else:
+      for note in all_notes:
+        print("-", note["topic"])
 
+         
 def search_notes():
   keyword = input("Enter keyword to search: ").lower()
-  file = os.listdir("notes")
-  found = False
-  print("\nSearch Results:")
+  with open("data/notes.json", "r") as file:
+    all_notes = json.load(file)
+    found = False
+    for note in all_notes:
+      if keyword in note["notes"].lower() or keyword in note["topic"].lower():
+        print("\nTopic:", note["topic"])
+        print("Notes:", note["notes"])
+        print("Created:", note["created"])
+        found = True
+        if not found:
+          print("No matching notes found.")
 
-  for file in file:
-    if keyword in file.lower():
-      print("-", file.replace(".text", "").replace("_", " ").title())
+
+def search_by_category():
+  category = input("Enter category: ").lower()
+  found = False
+  for filename in os.listdir("notes"):
+    file = open("notes/" + filename, "r")
+    content = file.read()
+    file.close()
+    if "category: " + category in content.lower():
+      print("\n---", filename, "---")
+      print(content)
       found = True
-      if not found:
-        print("No matching notes found")
+      if found == False:
+        print("No notes found in this category.")
+
 
 
 def delete_notes():
   topic = input("Enter topic to delete: ")
-  filename = "notes/" + topic.replace(" ", "_").lower() + ".text"
-  if os.remove(filename):
-    print("Note deleted successfully!")
+  with open("data/notes.json", "r") as file:
+    all_notes = json.load(file)
+    new_notes = []
+    found = False
+  for note in all_notes:
+      if note["topic"].lower() == topic.lower():
+        found = True
+      else:
+        new_notes.append(note)
+  with open("data/notes.json", "w") as file:
+          json.dump(new_notes, file, indent=4)
+  if found:
+            print("Note deleted successfully!")
   else:
-    print("Note not found.")
+            print("Note not found.") 
 
 def update_note():
   topic = input("Enter topic to update: ")
@@ -85,9 +141,11 @@ while True:
   print("2. Read Notes")
   print("3. List ALL Notes")
   print("4. Search Notes")
-  print("5. Delete Notes") 
-  print("6. Update Note")  
-  print("7. Exit") 
+  print("5. Search by Category")
+  print("6. Delete Notes") 
+  print("7. Update Note")  
+  print("8. Exit") 
+  print("9. Ask AI")
 
   choice = input("Choose an option: ")
 
@@ -100,10 +158,14 @@ while True:
   elif choice =="4":
     search_notes()
   elif choice == "5":
+    search_by_category()  
+  elif choice == "6":
     delete_notes()
-  elif choice =="6":
-    update_note()    
   elif choice =="7":
+    update_note()
+  elif choice  == "9":
+     ask_ai()      
+  elif choice =="8":
     print("Goodbye!")  
     break
             
